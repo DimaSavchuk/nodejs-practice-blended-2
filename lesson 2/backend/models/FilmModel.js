@@ -1,4 +1,4 @@
-const { Schema, model } = require("mongoose");
+const { Schema, model, SchemaType } = require("mongoose");
 
 const filmsSchema = new Schema(
   {
@@ -17,6 +17,11 @@ const filmsSchema = new Schema(
     rating: {
       type: Number,
       required: [true, "DB: rating is required"],
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      default: null,
+      ref: "users",
     },
   },
   { timestamps: true, versionKey: false }

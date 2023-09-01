@@ -1,4 +1,5 @@
 const FilmsModel = require("../models/FilmModel");
+const UserModel = require("../models/UserModel");
 const asyncHandler = require("express-async-handler");
 
 class Films {
@@ -11,9 +12,10 @@ class Films {
       res.status(400);
       throw new Error("Provide all files");
     }
-
+    const owner = await UserModel.findById(req.user.id);
     const film = await FilmsModel.create({
       ...req.body,
+      owner,
     });
     res.status(201).json({
       code: 201,
@@ -23,7 +25,9 @@ class Films {
   });
 
   getAll = asyncHandler(async (req, res) => {
-    const films = await FilmsModel.find({}, "-createdAt -updatedAt");
+    const owner = await UserModel.findById(req.user.id);
+
+    const films = await FilmsModel.find({ owner }, "-createdAt -updatedAt");
     res.status(200).json({
       code: 200,
       message: "success",
