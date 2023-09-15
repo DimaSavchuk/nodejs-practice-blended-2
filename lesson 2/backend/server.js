@@ -5,25 +5,61 @@ const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const { engine } = require("express-handlebars");
+
 const errorHandler = require("./middlewares/errorHandler");
 const UserModel = require("./models/UserModel");
 const RoleModel = require("./models/RoleModel");
+const sendEmail = require("./services/sendEmail");
 
 const authMiddleware = require("./middlewares/authMiddleware");
 
 const connectDB = require("../config/connectDB");
-const { log } = require("console");
+const exp = require("constants");
 
 require("colors");
 require("dotenv").config({ path: configPath });
 
 const app = express();
+
+app.use(express.static("public"));
+app.engine("handlebars", engine());
+app.set("view engine", "handlebars");
+app.set("views", "backend/views");
+
 app.use(express.json());
 app.use(
   express.urlencoded({
     extended: false,
   })
 );
+
+app.get("/", (req, res) => {
+  res.render("home");
+});
+
+app.get("/about", (req, res) => {
+  res.render("about");
+});
+
+app.get("/contact", (req, res) => {
+  res.render("contact");
+});
+
+app.post("/sended", async (req, res) => {
+  // res.send(req.body);
+  try {
+    await sendEmail(req.body);
+    res.render("sended", {
+      message: "Contact send OK",
+      user: req.body.userName,
+      email: req.body.userEmail,
+      text: req.body.userText,
+    });
+  } catch (error) {
+    res.status(400).json({ code: 400, message: error.message });
+  }
+});
 
 app.use("/api/v1", require("./routes/filmsRoutes"));
 // реестрація - це збереження користувача в базу данних
